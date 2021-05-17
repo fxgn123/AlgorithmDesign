@@ -1,43 +1,51 @@
 #include<stdio.h>
 
-#define Inf 9999
-void Floyd(int map[4][4]);
-void readin();
-
+struct box {
+	int no;
+	int weight;
+}b[100];
 int main() {
-	readin();
+	int boxnum,maxweight;
+	int loadno[100];
+	int loadmax;
+	printf("请输入盒子数量:\n");
+	scanf("%d",&boxnum);
+	printf("请输入集装箱最大承重:\n");
+	scanf("%d",&maxweight);
+	printf("请输入盒子的重量(空格隔开):\n");
+	for (int a = 0; a < boxnum; a++) {
+		scanf("%d",&b[a].weight);
+		b[a].no = a + 1;
+	}
+	for (int a = 0; a < boxnum-1; a++) {
+		for (int c = 0; c < boxnum - a - 1; c++) {
+			if (b[c].weight > b[c + 1].weight) {
+				int tempa, tempb;
+				tempa = b[c].no;
+				tempb = b[c].weight;
+				b[c].no = b[c + 1].no;
+				b[c].weight = b[c + 1].weight;
+				b[c + 1].weight = tempb;
+				b[c + 1].no = tempa;
+			}
+		}
+	}
+	loadmax = 0;
+	int bj = 0;
+	for (int a = 0; a < boxnum; a++) {
+		if (loadmax + b[a].weight > maxweight) {
+			bj = a;
+			break;
+		}
+		else {
+			loadmax = loadmax + b[a].weight;
+			loadno[a] = b[a].no;
+		}
+	}
+	printf("可以装载%d个盒子,装载重量为%d\n", bj,loadmax);
+	printf("转载的盒子序号为:");
+	for (int a = 0; a < bj; a++) {
+		printf("%d ",loadno[a]);
+	}
 	return 0;
-}
-
-void readin() {
-	int map[4][4];
-	map[0][0] = 0;   map[0][1] = 2;   map[0][2] = 6; map[0][3] = 4;
-	map[1][0] = Inf; map[1][1] = 0;   map[1][2] = 3; map[1][3] = Inf;
-	map[2][0] = 7;   map[2][1] = Inf; map[2][2] = 0; map[2][3] = 1;
-	map[3][0] = 5;   map[3][1] = Inf; map[3][2] = 1; map[3][3] = 0;
-	Floyd(map);
-}
-void Floyd(int map[4][4]) {
-	for (int a = 0; a < 4; a++) {
-		for (int b = 0; b < 4; b++) {
-			for (int c = 0; c < 4; c++) {
-				if ((map[b][a] + map[a][c]) < map[b][c]) {
-					map[b][c] = map[b][a] + map[a][c];
-				}
-			}
-		}
-		
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (map[i][j] != Inf) {
-				printf("%d ", map[i][j]);
-			}
-			else {
-				printf("无法到达");
-			}
-
-		}
-		printf("\n");
-	}
 }
