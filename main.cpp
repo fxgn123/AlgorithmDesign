@@ -1,43 +1,65 @@
-#include<stdio.h>
+#include<iostream>
 
-#define Inf 9999
-void Floyd(int map[4][4]);
-void readin();
+using namespace std;
 
-int main() {
-	readin();
-	return 0;
-}
+#define size 100
+int p[size];
+int m[size][size], s[size][size];
+int n;
 
-void readin() {
-	int map[4][4];
-	map[0][0] = 0;   map[0][1] = 2;   map[0][2] = 6; map[0][3] = 4;
-	map[1][0] = Inf; map[1][1] = 0;   map[1][2] = 3; map[1][3] = Inf;
-	map[2][0] = 7;   map[2][1] = Inf; map[2][2] = 0; map[2][3] = 1;
-	map[3][0] = 5;   map[3][1] = Inf; map[3][2] = 1; map[3][3] = 0;
-	Floyd(map);
-}
-void Floyd(int map[4][4]) {
-	for (int a = 0; a < 4; a++) {
-		for (int b = 0; b < 4; b++) {
-			for (int c = 0; c < 4; c++) {
-				if ((map[b][a] + map[a][c]) < map[b][c]) {
-					map[b][c] = map[b][a] + map[a][c];
+void matrixchain()
+{
+	int i, r, j, k;
+	memset(m, 0, sizeof(m));
+	memset(s, 0, sizeof(s));//初始化数组
+	for (r = 2; r <= n; r++)//矩阵连乘的规模为r 
+	{
+		for (i = 1; i <= n - r + 1; i++)
+		{
+			j = i + r - 1;
+			m[i][j] = m[i + 1][j] + p[i - 1] * p[i] * p[j];//对m[][]开始赋值
+			s[i][j] = i;//s[][]存储各子问题的决策点
+			for (k = i + 1; k < j; k++)//寻找最优值
+			{
+				int t = m[i][k] + m[k + 1][j] + p[i - 1] * p[k] * p[j];
+				if (t < m[i][j])
+				{
+					m[i][j] = t;
+					s[i][j] = k;
 				}
 			}
 		}
-		
 	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (map[i][j] != Inf) {
-				printf("%d ", map[i][j]);
-			}
-			else {
-				printf("无法到达");
-			}
+}
 
-		}
-		printf("\n");
+
+void printOrder(int i, int j)
+{
+	if (i == j)
+	{
+		cout << "A[" << i << "]";
+		return;
 	}
+	cout << "(";
+	printOrder(i, s[i][j]);
+	printOrder(s[i][j] + 1, j);//递归1到s[1][j]
+	cout << ")";
+}
+
+
+
+int main()
+{
+	cout << "请输入矩阵的个数n : " << endl;
+	cin >> n;
+	int i, j;
+	cout << "输入矩阵链：" << endl;
+	for (i = 0; i <= n; i++)
+		cin >> p[i];
+	matrixchain();
+	printOrder(1, n);
+	cout << endl;
+	cout << "最小计算量的值为：" << m[1][n] << endl;
+	return 0;
+
 }
