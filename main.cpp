@@ -1,43 +1,55 @@
-#include<stdio.h>
+#include <stdio.h>
+#include <string.h>
 
-#define Inf 9999
-void Floyd(int map[4][4]);
-void readin();
 
-int main() {
-	readin();
-	return 0;
-}
+#define MAXLEN 30
 
-void readin() {
-	int map[4][4];
-	map[0][0] = 0;   map[0][1] = 2;   map[0][2] = 6; map[0][3] = 4;
-	map[1][0] = Inf; map[1][1] = 0;   map[1][2] = 3; map[1][3] = Inf;
-	map[2][0] = 7;   map[2][1] = Inf; map[2][2] = 0; map[2][3] = 1;
-	map[3][0] = 5;   map[3][1] = Inf; map[3][2] = 1; map[3][3] = 0;
-	Floyd(map);
-}
-void Floyd(int map[4][4]) {
-	for (int a = 0; a < 4; a++) {
-		for (int b = 0; b < 4; b++) {
-			for (int c = 0; c < 4; c++) {
-				if ((map[b][a] + map[a][c]) < map[b][c]) {
-					map[b][c] = map[b][a] + map[a][c];
-				}
+void LCS(char* x, char* y, int m, int n, int a[][MAXLEN], int b[][MAXLEN]) {
+	int i, j;
+	for (i = 0; i <= m; i++)	a[i][0] = 0;
+	for (j = 1; j <= n; j++)	b[0][j] = 0;
+	for (i = 1; i <= m; i++) {
+		for (j = 1; j <= n; j++) {
+			if (x[i - 1] == y[j - 1]) {
+				a[i][j] = a[i - 1][j - 1] + 1;
+				b[i][j] = 1;
 			}
-		}
-		
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (map[i][j] != Inf) {
-				printf("%d ", map[i][j]);
+			else if (a[i - 1][j] >= a[i][j - 1]) {
+				a[i][j] = a[i - 1][j];
+				b[i][j] = 3;
 			}
 			else {
-				printf("无法到达");
+				a[i][j] = a[i][j - 1];
+				b[i][j] = 2;
 			}
 
 		}
-		printf("\n");
 	}
+}
+
+void PrintLCS(int b[][MAXLEN], char* x, int i, int j) {
+	if (i == 0 || j == 0)	return;
+	if (b[i][j] == 1) {
+		PrintLCS(b, x, i - 1, j - 1);
+		printf("%c", x[i - 1]);
+	}
+	else if (b[i][j] == 3)
+		PrintLCS(b, x, i - 1, j);
+	else
+		PrintLCS(b, x, i, j - 1);
+}
+
+int main() {
+	char x[MAXLEN] = { "AACDASDABDC" };
+	char y[MAXLEN] = { "ACFSADDA" };
+	int a[MAXLEN][MAXLEN],
+		b[MAXLEN][MAXLEN];
+	int m, n;
+	m = strlen(x);
+	n = strlen(y);
+
+	LCS(x, y, m, n, a, b);
+	PrintLCS(b, x, m, n);
+
+	return 0;
 }
