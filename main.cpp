@@ -1,55 +1,87 @@
-#include <stdio.h>
-#include <string.h>
+#include <algorithm>
+#include <iostream> 
+#include<stdio.h>
+using namespace std;
 
+const int N = 4;
+int c = 8;
+int v[] = { 0,1,4,2,3 }, w[] = { 0,4,1,2,5 };
+int x[N + 1];
+int m[10][10];
+void Knapsack(int v[], int w[], int c, int n, int m[][10])
+{
+	int jMax = min(w[n] - 1, c);
+	for (int j = 0; j <= jMax; j++)
+	{
+		m[n][j] = 0;
+	}
 
-#define MAXLEN 30
+	for (int j = w[n]; j <= c; j++)
+	{
+		m[n][j] = v[n];
+	}
 
-void LCS(char* x, char* y, int m, int n, int a[][MAXLEN], int b[][MAXLEN]) {
-	int i, j;
-	for (i = 0; i <= m; i++)	a[i][0] = 0;
-	for (j = 1; j <= n; j++)	b[0][j] = 0;
-	for (i = 1; i <= m; i++) {
-		for (j = 1; j <= n; j++) {
-			if (x[i - 1] == y[j - 1]) {
-				a[i][j] = a[i - 1][j - 1] + 1;
-				b[i][j] = 1;
-			}
-			else if (a[i - 1][j] >= a[i][j - 1]) {
-				a[i][j] = a[i - 1][j];
-				b[i][j] = 3;
-			}
-			else {
-				a[i][j] = a[i][j - 1];
-				b[i][j] = 2;
-			}
+	for (int i = n - 1; i > 1; i--)
+	{
+		jMax = min(w[i] - 1, c);
+		for (int j = 0; j <= jMax; j++)
+		{
+			m[i][j] = m[i + 1][j];
+		}
 
+		for (int j = w[i]; j <= c; j++) 
+		{
+			m[i][j] = max(m[i + 1][j], m[i + 1][j - w[i]] + v[i]);
 		}
 	}
-}
-
-void PrintLCS(int b[][MAXLEN], char* x, int i, int j) {
-	if (i == 0 || j == 0)	return;
-	if (b[i][j] == 1) {
-		PrintLCS(b, x, i - 1, j - 1);
-		printf("%c", x[i - 1]);
+	m[1][c] = m[2][c];
+	if (c >= w[1])
+	{
+		m[1][c] = max(m[1][c], m[2][c - w[1]] + v[1]);
 	}
-	else if (b[i][j] == 3)
-		PrintLCS(b, x, i - 1, j);
-	else
-		PrintLCS(b, x, i, j - 1);
+}
+void Traceback(int m[][10], int w[], int c, int n, int x[])
+{
+	for (int i = 1; i < n; i++)
+	{
+		if (m[i][c] == m[i + 1][c])
+		{
+			x[i] = 0;
+		}
+		else
+		{
+			x[i] = 1;
+			c -= w[i];
+		}
+	}
+	x[n] = (m[n][c]) ? 1 : 0;
 }
 
-int main() {
-	char x[MAXLEN] = { "AACDASDABDC" };
-	char y[MAXLEN] = { "ACFSADDA" };
-	int a[MAXLEN][MAXLEN],
-		b[MAXLEN][MAXLEN];
-	int m, n;
-	m = strlen(x);
-	n = strlen(y);
-
-	LCS(x, y, m, n, a, b);
-	PrintLCS(b, x, m, n);
-
+int main()
+{
+	cout << "待装物品重量分别为：" << endl;
+	for (int i = 1; i <= N; i++)
+	{
+		cout << w[i] << " ";
+	}
+	cout << endl;
+	cout << "待装物品价值分别为：" << endl;
+	for (int i = 1; i <= N; i++)
+	{
+		cout << v[i] << " ";
+	}
+	cout << endl;
+	Knapsack(v, w, c, N, m);
+	cout << "背包能装的最大价值为：" << m[1][c] << endl;
+	Traceback(m, w, c, N, x);
+	cout << "背包装下的物品编号为：" << endl;
+	for (int i = 1; i <= N; i++)
+	{
+		if (x[i] == 1)
+		{
+			cout << i << " ";
+		}
+	}
+	cout << endl;
 	return 0;
 }
