@@ -1,43 +1,75 @@
 #include<stdio.h>
-
-#define Inf 9999
-void Floyd(int map[4][4]);
-void readin();
-
-int main() {
-	readin();
-	return 0;
+#include<math.h>
+#define inf 0x3f3f3f3f
+struct points {
+	double x, y;
+};
+double min(double x, double y) {
+	if (x < y)return x;
+	else return y;
 }
-
-void readin() {
-	int map[4][4];
-	map[0][0] = 0;   map[0][1] = 2;   map[0][2] = 6; map[0][3] = 4;
-	map[1][0] = Inf; map[1][1] = 0;   map[1][2] = 3; map[1][3] = Inf;
-	map[2][0] = 7;   map[2][1] = Inf; map[2][2] = 0; map[2][3] = 1;
-	map[3][0] = 5;   map[3][1] = Inf; map[3][2] = 1; map[3][3] = 0;
-	Floyd(map);
+double dis(points p1, points p2) {
+	//printf("%lf\n", p1.x);
+	//printf("%lf\n", sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
+	return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
 }
-void Floyd(int map[4][4]) {
-	for (int a = 0; a < 4; a++) {
-		for (int b = 0; b < 4; b++) {
-			for (int c = 0; c < 4; c++) {
-				if ((map[b][a] + map[a][c]) < map[b][c]) {
-					map[b][c] = map[b][a] + map[a][c];
-				}
+int cmpx(points& a, points& b) {
+	return a.x < b.x;
+}
+double ecp(points p[], int n) {
+	double dminsq = inf;
+	if (n <= 3) {
+		for (int a = 0; a < n; a++) {
+			for (int b = a + 1; b < n; b++) {
+				dminsq = min(dis(p[a], p[b]), dminsq);
+				//printf("%lf\n", dminsq);
+			}
+		}
+		//printf("%lf\n",dminsq);
+	}
+	else {
+		points Pleft[1000], Pright[1000], s[1000];
+		double mid, dl, dr, d;
+		int len1 = ceil(1.0 * n / 2);
+		int len2, num = 0;
+		len2 = n - len1;
+		for (int i = 0; i < len1; i++)	Pleft[i] = p[i];
+		for (int i = 0; i < len2; i++)	Pright[i] = p[i];
+
+		dl = ecp(Pleft, len1);
+		dr = ecp(Pright, len2);
+		d = min(dl, dr);
+		dminsq = pow(d, 2);
+		mid = p[len1 - 1].x;
+
+		for (int i = 0; i < n; i++) {
+			if (fabs(p[i].x - mid) < d)
+				s[num++] = p[i];
+		}
+
+		for (int i = 0; i < num - 1; i++) {
+			int k = i + 1;
+			while (k <= num - 1 && pow((s[k].y - s[i].y), 2) + pow((s[k].x - s[i].x), 2) < dminsq) {
+				dminsq = min(pow((s[k].y - s[i].y), 2) + pow((s[k].x - s[i].x), 2), dminsq);
+				k++;
 			}
 		}
 		
 	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (map[i][j] != Inf) {
-				printf("%d ", map[i][j]);
-			}
-			else {
-				printf("无法到达");
-			}
-
-		}
-		printf("\n");
+	return sqrt(dminsq);
+}
+int main() {
+	int n, i;
+	double ans;
+	struct points p[1000];
+	printf("输入点的个数：");
+	scanf("%d",&n);
+	for (i = 0; i < n; i++) {
+		printf("输入点的坐标：");
+		scanf("%lf %lf", &p[i].x, &p[i].y);
+		//printf("%lf\n", p[i].x);
 	}
+	ans = ecp(p, n);
+	printf("最近对为%lf\n", ans);
+	return 0;
 }
