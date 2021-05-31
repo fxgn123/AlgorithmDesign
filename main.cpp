@@ -1,43 +1,105 @@
 #include<stdio.h>
+#define MAXNUM 100
+#define MAXHUFF 100
+#define MAXWEIGHT 1000
+typedef struct {
+	int weight;
+	char ch;
+	int parent;
+	int lchild;
+	int rchild;
+}HFN;
+typedef struct {
+	int code[MAXNUM];
+	int start;
+}HFC;
 
-#define Inf 9999
-void Floyd(int map[4][4]);
-void readin();
+HFN huffman[MAXHUFF];
+HFC code[MAXHUFF+1];
 
-int main() {
-	readin();
-	return 0;
-}
-
-void readin() {
-	int map[4][4];
-	map[0][0] = 0;   map[0][1] = 2;   map[0][2] = 6; map[0][3] = 4;
-	map[1][0] = Inf; map[1][1] = 0;   map[1][2] = 3; map[1][3] = Inf;
-	map[2][0] = 7;   map[2][1] = Inf; map[2][2] = 0; map[2][3] = 1;
-	map[3][0] = 5;   map[3][1] = Inf; map[3][2] = 1; map[3][3] = 0;
-	Floyd(map);
-}
-void Floyd(int map[4][4]) {
-	for (int a = 0; a < 4; a++) {
-		for (int b = 0; b < 4; b++) {
-			for (int c = 0; c < 4; c++) {
-				if ((map[b][a] + map[a][c]) < map[b][c]) {
-					map[b][c] = map[b][a] + map[a][c];
-				}
+void HFMtreebulid(int n) {
+	for (int i = 0; i < n * 2 - 1; ++i) {//初始化
+		huffman[i].weight = 0;
+		huffman[i].parent = -1;
+		huffman[i].lchild = -1;
+		huffman[i].rchild = -1;
+	}
+	for (int i = 0; i < n; i++) {
+		printf("请分别输入第%d个哈夫曼字符和权重", i);
+		getchar();
+		scanf("%c", &huffman[i].ch);
+		scanf("%d", &huffman[i].weight);
+		//getchar();
+		//printf("%c...%d...\n", huffman[i].ch, huffman[i].weight);
+		//getchar();
+	}
+	int x1, w1, x2, w2;
+	for (int i = 0; i < n - 1; i++) {
+		x1 = -1;
+		x2 = -1;
+		w1 = MAXWEIGHT;
+		w2 = MAXWEIGHT;
+		for (int j = 0; j < n + i; j++) {
+			if ((huffman[j].parent == -1) && (huffman[j].weight < w1)) {
+				w2 = w1;
+				x2 = x1;
+				x1 = j;
+				w1 = huffman[j].weight;
+			}
+			else if((huffman[j].parent == -1) && (huffman[j].weight < w2)) {
+				x2 = j;
+				w2 = huffman[j].weight;
 			}
 		}
-		
+		huffman[n + i].lchild = x1;
+		huffman[n + i].rchild = x2;
+		huffman[n + i].weight = w1 + w2;
+		huffman[x1].parent = n + i;
+		huffman[x2].parent = n + i;
 	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (map[i][j] != Inf) {
-				printf("%d ", map[i][j]);
+}
+void Print(int n) {
+	HFC hcode;
+	int nowParent;
+	int c;
+	for (int i = 0; i < n; i++) {
+		hcode.start = n - 1;
+		c = i;
+		nowParent= huffman[i].parent;
+		while (nowParent != -1) {
+			if (huffman[nowParent].lchild == c) {
+				hcode.code[hcode.start] = 0;
 			}
 			else {
-				printf("无法到达");
+				hcode.code[hcode.start] = 1;
 			}
-
+			hcode.start--;
+			c = nowParent;
+			nowParent = huffman[c].parent;
+		}
+		for (int j = hcode.start + 1; j < n; j++) {
+			code[i].code[j] = hcode.code[j];
+			printf("%d", hcode.code[j]);
+		}
+		printf("\n");
+		code[i].start = hcode.start;
+	}
+}
+int main() {
+	printf("请输入有多少个哈夫曼字符");
+	int n = 0;
+	scanf("%d", &n);
+	if (n == 0) {
+		return 0;
+	}
+	HFMtreebulid(n);
+	Print(n);
+	for (int i = 0; i < n; ++i) {
+		printf("%c 's Huffman Code is:", huffman[i].ch);
+		for (int j = code[i].start + 1; j < n; ++j) {
+			printf("%d", code[i].code[j]);
 		}
 		printf("\n");
 	}
+	return 0;
 }
